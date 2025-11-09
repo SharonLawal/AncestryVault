@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import LogoIconBlue from './LogoIcon';
+import { LogoIconBlue } from './LogoIcon';
 import { HamburgerIcon, CloseIcon } from './Icons';
 
 const Header = ({ onSetPage, onLogout }) => {
