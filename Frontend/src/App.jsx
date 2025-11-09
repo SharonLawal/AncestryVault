@@ -95,7 +95,7 @@ export default function App() {
                 {renderPage()}
             </main>
             
-            <Footer />
+            {isLoggedIn && <Footer />}
         </div>
     );
 }
