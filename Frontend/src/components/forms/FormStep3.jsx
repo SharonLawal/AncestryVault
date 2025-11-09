@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { FormContext } from '../../context/FormContext.jsx';
+import { FormContext } from '../../context/FormContext';
 
 const FormStep3 = ({ onProceed, setFormStep }) => {
     const { formData } = useContext(FormContext);

@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { FormContext } from '../../context/FormContext.jsx';
-import FormInput from '../../components/common/FormInput.jsx';
-import FormRadio from '../../components/common/FormRadio.jsx';
-import { UploadIcon, MailIcon, LockIcon, CalendarIcon } from '../../components/common/Icons.jsx';
+import { FormContext } from '../../context/FormContext';
+import FormInput from '../../components/common/FormInput';
+import FormRadio from '../../components/common/FormRadio';
+import { UploadIcon, MailIcon, LockIcon, CalendarIcon } from '../../components/common/Icons';
 
 const FormStep1 = ({ setFormStep }) => {
     const { formData, updateStep1Data } = useContext(FormContext);

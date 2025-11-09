@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EyeIcon, EyeOffIcon } from './Icons.jsx';
+import { EyeIcon, EyeOffIcon } from './Icons';
 
 const FormInput = ({ name, label, type = "text", placeholder, icon, required = false, value, onChange, error }) => {
     

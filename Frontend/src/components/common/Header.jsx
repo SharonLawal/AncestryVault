@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import LogoIconBlue from './LogoIcon.jsx';
-import { HamburgerIcon, CloseIcon } from './Icons.jsx';
+import LogoIconBlue from './LogoIcon';
+import { HamburgerIcon, CloseIcon } from './Icons';
 
 const Header = ({ onSetPage, onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);

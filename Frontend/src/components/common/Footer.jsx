@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogoIconWhite } from './LogoIcon.jsx';
+import { LogoIconWhite } from './LogoIcon';
 
 const Footer = () => {
     return (

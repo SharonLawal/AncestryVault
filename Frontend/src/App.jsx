@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/common/Header.jsx';
-import Footer from './components/common/Footer.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import HomePage from './pages/HomePage.jsx';
-import VideoWillPage from './pages/VideoWillPage.jsx';
+import Header from './components/common/Header';
+import Footer from './components/common/Footer';
+import LoginPage from './pages/LoginPage';
+import HomePage from './pages/HomePage';
+import VideoWillPage from './pages/VideoWillPage';
 
 const LoadingScreen = () => (
     <div className="flex items-center justify-center min-h-screen bg-gray-200">
