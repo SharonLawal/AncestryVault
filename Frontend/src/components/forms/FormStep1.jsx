@@ -1,108 +1,168 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FormContext } from '../../context/FormContext';
-import FormInput from '../../components/common/FormInput';
-import FormRadio from '../../components/common/FormRadio';
-import { UploadIcon, MailIcon, LockIcon, CalendarIcon } from '../../components/common/Icons';
+import FormInput from '../common/FormInput';
+import { UploadIcon } from '../common/Icons';
 
 const FormStep1 = ({ setFormStep }) => {
     const { formData, updateStep1Data } = useContext(FormContext);
     const [errors, setErrors] = useState({});
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    useEffect(() => {
+        if (formData.step1.profile_picture && typeof formData.step1.profile_picture === 'object') {
+            const url = URL.createObjectURL(formData.step1.profile_picture);
+            setPreviewUrl(url);
+        }
+    }, [formData.step1.profile_picture]);
+
+    useEffect(() => {
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         updateStep1Data({ [name]: value });
 
+        // Clear error when user starts typing
         if (errors[name]) {
-            setErrors(prevErrors => ({
-                ...prevErrors,
-                [name]: null
-            }));
+            setErrors(prev => ({ ...prev, [name]: null }));
         }
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            updateStep1Data({ profilePicture: file });
-            if (errors.profilePicture) {
-                setErrors(prevErrors => ({
-                    ...prevErrors,
-                    profilePicture: null
-                }));
+            // Revoke the old URL if one exists
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+            
+            // Create a new URL for the selected file
+            const newUrl = URL.createObjectURL(file);
+            setPreviewUrl(newUrl);
+            
+            updateStep1Data({ profile_picture: file });
+            if (errors.profile_picture) {
+                setErrors(prev => ({ ...prev, profile_picture: null }));
             }
         }
     };
 
-    const validate = () => {
+    const validateForm = () => {
         const newErrors = {};
-        const data = formData.step1;
+        const { step1 } = formData;
 
-        if (!data.fullName) newErrors.fullName = "Full name is required.";
-        if (!data.email) newErrors.email = "Email is required.";
-        if (!data.secretCode) newErrors.secretCode = "Secret code is required.";
-        if (data.secretCode !== data.confirmSecretCode) newErrors.confirmSecretCode = "Secret codes do not match.";
-        if (!data.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required.";
-        if (!data.gender) newErrors.gender = "Gender is required.";
-        if (!data.profilePicture) newErrors.profilePicture = "Profile picture is required.";
+        if (!step1.fullname) newErrors.fullname = 'Full name is required.';
+        if (!step1.date_of_birth) newErrors.date_of_birth = 'Date of birth is required.';
+        if (!step1.gender) newErrors.gender = 'Gender is required.';
+        if (!step1.profile_picture) newErrors.profile_picture = 'Profile picture is required.';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleProceed = () => {
-        if (validate()) {
+    const handleNext = () => {
+        if (validateForm()) {
             setFormStep(2);
         }
     };
-    
-    const data = formData.step1;
+
+    const getTodayDate = () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    };
 
     return (
         <form id="signup-form-step1" className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-            {/* Role Selector */}
-            <fieldset className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <legend className="sr-only">Select your role</legend>
-                <FormRadio name="role" id="role_grandparent" label="Grandparent" checked={data.role === 'Grandparent'} onChange={handleChange} />
-                <FormRadio name="role" id="role_parent" label="Parent" checked={data.role === 'Parent'} onChange={handleChange} />
-                <FormRadio name="role" id="role_descendant" label="Descendant" checked={data.role === 'Descendant'} onChange={handleChange} />
-                <FormRadio name="role" id="role_lawyer" label="Family Lawyer" checked={data.role === 'Family Lawyer'} onChange={handleChange} />
-            </fieldset>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {/* Column 1 */}
                 <div className="space-y-6">
-                    <FormInput name="fullName" label="Full Name" placeholder="Enter your full name here" required={true} value={data.fullName} onChange={handleChange} error={errors.fullName} />
-                    <FormInput name="email" label="Email" type="email" placeholder="johndoe@gmail.com" icon={<MailIcon />} required={true} value={data.email} onChange={handleChange} error={errors.email} />
-                    <FormInput name="secretCode" label="Family Secret Code" type="password" placeholder="Enter the family secret code" icon={<LockIcon />} required={true} value={data.secretCode} onChange={handleChange} error={errors.secretCode} />
-                    <FormInput name="parentName" label="Parent's Name" placeholder="Enter your parent's name" icon={<span className="text-gray-400">@</span>} value={data.parentName} onChange={handleChange} />
-                    <FormInput name="dateOfBirth" label="Date of Birth" type="date" placeholder="Enter your date of Birth" icon={<CalendarIcon />} required={true} value={data.dateOfBirth} onChange={handleChange} error={errors.dateOfBirth} />
-                     <div>
-                        <label htmlFor="numChildren" className="block text-gray-700 mb-2 font-semibold">Number of Children</label>
-                        <select id="numChildren" name="numChildren" value={data.numChildren} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option>Select your number of children</option>
-                            <option value="0">0</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3+">3+</option>
-                        </select>
-                    </div>
+                    <FormInput 
+                        label="Full Name"
+                        name="fullname"
+                        placeholder="Enter your full name here"
+                        value={formData.step1.fullname}
+                        onChange={handleChange}
+                        error={errors.fullname}
+                        required={true}
+                    />
+                    <FormInput 
+                        label="Date of Birth"
+                        name="date_of_birth"
+                        type="date"
+                        value={formData.step1.date_of_birth}
+                        onChange={handleChange}
+                        error={errors.date_of_birth}
+                        required={true}
+                        max={getTodayDate()}
+                    />
+                    <FormInput 
+                        label="Parent's Name"
+                        name="parent_name"
+                        placeholder="Enter your parent's name"
+                        value={formData.step1.parent_name}
+                        onChange={handleChange}
+                    />
+                    <FormInput 
+                        label="Profession"
+                        name="profession"
+                        placeholder="Enter your profession here"
+                        value={formData.step1.profession}
+                        onChange={handleChange}
+                    />
                 </div>
                 
+                {/* Column 2 */}
                 <div className="space-y-6">
-                    <div className="h-24 hidden md:block"></div> 
-                    <div className="h-24 hidden md:block"></div>
-                    <FormInput name="confirmSecretCode" label="Confirm Family Secret Code" type="password" placeholder="Confirm the family secret code" icon={<LockIcon />} required={true} value={data.confirmSecretCode} onChange={handleChange} error={errors.confirmSecretCode} />
-                    <FormInput name="spouseName" label="Spouse's Name" placeholder="Enter your spouse's name" icon={<span className="text-gray-400">@</span>} value={data.spouseName} onChange={handleChange} />
-                    <div>
-                        <label htmlFor="gender" className="block text-gray-700 mb-2 font-semibold">Gender <span className="text-red-500">*</span></label>
-                        <select id="gender" name="gender" value={data.gender} onChange={handleChange} className={`w-full px-4 py-3 rounded-lg border ${errors.gender ? 'border-red-500' : 'border-gray-300'} bg-white text-gray-900 focus:outline-none focus:ring-2 ${errors.gender ? 'ring-red-500' : 'ring-indigo-500'}`}>
+                     <div>
+                        <label htmlFor="gender" className="block text-gray-700 mb-2 font-semibold">
+                            Gender <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="gender"
+                            name="gender"
+                            value={formData.step1.gender}
+                            onChange={handleChange}
+                            className={`w-full px-4 py-3 rounded-lg border ${errors.gender ? 'border-red-500' : 'border-gray-300'} bg-white text-gray-900 focus:outline-none focus:ring-2 ${errors.gender ? 'ring-red-500' : 'ring-indigo-500'}`}
+                        >
                             <option value="">Select Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
                         </select>
                         {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
                     </div>
-                    <FormInput name="profession" label="Profession" placeholder="Enter your profession here" value={data.profession} onChange={handleChange} />
+
+                     <FormInput 
+                        label="Spouse's Name"
+                        name="spouse_name"
+                        placeholder="Enter your spouse's name"
+                        value={formData.step1.spouse_name}
+                        onChange={handleChange}
+                    />
+                    
+                    {/* Description Text Area */}
+                    <div>
+                        <label htmlFor="description" className="block text-gray-700 mb-2 font-semibold">
+                            Description
+                        </label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows="4"
+                            placeholder="Tell us a bit about yourself..."
+                            value={formData.step1.description}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        ></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -111,20 +171,40 @@ const FormStep1 = ({ setFormStep }) => {
                 <label className="block text-gray-700 mb-2 font-semibold">
                     Profile Picture <span className="text-red-500">*</span>
                 </label>
-                <div className={`border-2 border-dashed ${errors.profilePicture ? 'border-red-500' : 'border-gray-400'} rounded-lg p-12 text-center bg-gray-50 hover:bg-gray-100 cursor-pointer`} style={{ backgroundColor: '#E6E6FA' }} onClick={() => document.getElementById('profilePicture').click()}>
-                    <input type="file" id="profilePicture" name="profilePicture" accept="image/*,application/pdf,.doc,.docx" className="hidden" onChange={handleFileChange} />
-                    <UploadIcon />
-                    <span className="mt-2 block text-gray-600">
-                        {data.profilePicture ? `File: ${data.profilePicture.name}` : 'Click here to upload a profile picture'}
-                    </span>
-                    <span className="mt-1 block text-sm text-gray-500">Maximum of 50MB</span>
+                <div 
+                    className={`border-2 border-dashed ${errors.profile_picture ? 'border-red-500' : 'border-gray-400'} rounded-lg p-6 text-center bg-gray-50 hover:bg-gray-100 cursor-pointer overflow-hidden`} 
+                    style={{ backgroundColor: '#E6E6FA' }}
+                    onClick={() => document.getElementById('profile_picture_input').click()}
+                >
+                    {/* CONDITIONAL RENDER: Show preview or upload icon */}
+                    {previewUrl ? (
+                        <div className="relative">
+                            <img src={previewUrl} alt="Profile Preview" className="w-full h-48 object-cover rounded-md" />
+                            <span className="mt-2 block text-gray-600">Click to change picture</span>
+                        </div>
+                    ) : (
+                        <div className="p-6">
+                            <UploadIcon />
+                            <span className="mt-2 block text-gray-600">Click here to upload a profile picture</span>
+                            <span className="mt-1 block text-sm text-gray-500">Maximum of 50MB</span>
+                        </div>
+                    )}
+                    
+                    <input 
+                        type="file" 
+                        id="profile_picture_input"
+                        name="profile_picture"
+                        className="hidden" 
+                        onChange={handleFileChange}
+                        accept="image/*"
+                    />
                 </div>
-                {errors.profilePicture && <p className="text-red-500 text-sm mt-1">{errors.profilePicture}</p>}
+                {errors.profile_picture && <p className="text-red-500 text-sm mt-1">{errors.profile_picture}</p>}
             </div>
 
             {/* Submit Button */}
             <div className="pt-6">
-                <button type="button" onClick={handleProceed} className="w-full bg-indigo-700 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg">
+                <button type="button" onClick={handleNext} className="w-full bg-indigo-700 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg">
                     Proceed to Step 2: Invite Family
                 </button>
             </div>

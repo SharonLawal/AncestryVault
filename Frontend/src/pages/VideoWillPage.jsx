@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { FormContext } from '../context/FormContext';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { VideoCameraIcon, StopIcon, PauseIcon } from '../components/common/Icons';
 
-const VideoWillPage = () => {
+const VideoWillPage = ({ onSetPage }) => {
+    const { updateVideoDescription } = useContext(FormContext);
+
     const {
         videoRef,
         isRecording,
@@ -13,7 +16,11 @@ const VideoWillPage = () => {
         handleStartRecording,
         handleEndRecording,
         handlePauseRecording,
-    } = useMediaRecorder();
+    } = useMediaRecorder(updateVideoDescription);
+
+    const handleSaveAndReturn = () => {
+        onSetPage('home');
+    };
 
     return (
         <div className="page container mx-auto max-w-4xl px-6 py-16 bg-gray-200 flex-grow">
@@ -33,7 +40,7 @@ const VideoWillPage = () => {
                     </div>
                 )}
                 
-                {/* Download Link */}
+                {/* Download/Save Link */}
                 {lastRecordingUrl && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center" role="alert">
                         <span className="block sm:inline">Recording complete! </span>
@@ -52,7 +59,7 @@ const VideoWillPage = () => {
                         </div>
                     ) : (
                         <div className="w-full h-full relative bg-black">
-                            <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" autoPlay muted playsInline></video>
+                            <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" playsInline autoPlay muted></video> 
                             <span className="absolute top-4 left-4 text-xl font-semibold text-red-500 z-10 bg-black/50 px-3 py-1 rounded">
                                 {videoStatusText}
                             </span>
@@ -62,7 +69,7 @@ const VideoWillPage = () => {
 
                 {/* Controls shown before recording */}
                 <div className={`mt-6 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 ${!isRecording ? '' : 'hidden'}`}>
-                     <button onClick={handleEndRecording} className="flex items-center space-x-2 bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold text-lg transition cursor-not-allowed">
+                   <button onClick={handleEndRecording} className="flex items-center space-x-2 bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold text-lg transition cursor-not-allowed">
                         <StopIcon />
                         <span>End Recording</span>
                     </button>
@@ -90,6 +97,15 @@ const VideoWillPage = () => {
                         <span id="pause-text">{isPaused ? 'Resume' : 'Pause'}</span>
                     </button>
                 </div>
+
+                {/* New button to save and return */}
+                {lastRecordingUrl && !isRecording && (
+                     <div className="mt-6 text-center">
+                        <button onClick={handleSaveAndReturn} className="w-full max-w-md bg-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg">
+                            Save Video & Return Home
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

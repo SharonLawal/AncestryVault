@@ -4,16 +4,8 @@ import Footer from './components/common/Footer';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import VideoWillPage from './pages/VideoWillPage';
-
-const LoadingScreen = () => (
-    <div className="flex items-center justify-center min-h-screen bg-gray-200">
-        <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-indigo-700 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="w-4 h-4 bg-indigo-700 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-4 h-4 bg-indigo-700 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-        </div>
-    </div>
-);
+import { FormProvider } from './context/FormContext';
+import LoadingScreen from './components/common/LoadingScreen';
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,21 +13,34 @@ export default function App() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const existingScript = document.querySelector('script[src="https://cdn.tailwindcss.com"]');
+        
+        if (existingScript && window.tailwind) {
+            setTimeout(() => setIsLoading(false), 100);
+            return;
+        }
+
         const script = document.createElement('script');
         script.src = 'https://cdn.tailwindcss.com';
-        script.async = true;
+        script.async = false;
         
-        // Add onload event to set loading to false
         script.onload = () => {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 300);
+        };
+        
+        script.onerror = () => {
+            console.error("Failed to load Tailwind CSS.");
             setIsLoading(false);
         };
         
         document.head.appendChild(script);
         
         return () => {
-            const existingScript = document.querySelector('script[src="https://cdn.tailwindcss.com"]');
-            if (existingScript) {
-                document.head.removeChild(existingScript);
+            const scriptToRemove = document.querySelector('script[src="https://cdn.tailwindcss.com"]');
+            if (scriptToRemove && scriptToRemove.onload) {
+                scriptToRemove.onload = null;
             }
         };
     }, []);
@@ -62,24 +67,24 @@ export default function App() {
         }
         switch (currentPage) {
             case 'video-will':
-                return <VideoWillPage />;
+                return <VideoWillPage onSetPage={handleSetPage} />;
             case 'home':
             default:
                 return <HomePage onSetPage={handleSetPage} />;
         }
     };
 
-    // Show loading screen until Tailwind is ready
-    if (isLoading) {
-        return <LoadingScreen />;
-    }
-
     return (
-        <div className="bg-gray-200 min-h-screen flex flex-col">
+        <FormProvider>
             <style>
                 {`
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
-                body { font-family: 'Inter', sans-serif; background-color: #E5E7EB; }
+                body { 
+                    font-family: 'Inter', sans-serif; 
+                    background-color: #E5E7EB; 
+                    margin: 0;
+                    padding: 0;
+                }
                 .font-playfair { font-family: 'Playfair Display', serif; }
                 .page { animation: fadeIn 0.3s ease-in-out; }
                 @keyframes fadeIn {
@@ -89,13 +94,21 @@ export default function App() {
                 `}
             </style>
             
-            {isLoggedIn && <Header onSetPage={handleSetPage} onLogout={handleLogout} />}
+            {isLoading && <LoadingScreen />}
             
-            <main className="flex-grow">
-                {renderPage()}
-            </main>
-            
-            {isLoggedIn && <Footer />}
-        </div>
+            <div style={{ 
+                visibility: isLoading ? 'hidden' : 'visible',
+                opacity: isLoading ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out'
+            }} className="bg-gray-200 min-h-screen flex flex-col">
+                {isLoggedIn && <Header onSetPage={handleSetPage} onLogout={handleLogout} />}
+                
+                <main className="flex-grow">
+                    {renderPage()}
+                </main>
+                
+                {isLoggedIn && <Footer />}
+            </div>
+        </FormProvider>
     );
 }

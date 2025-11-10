@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { FormProvider } from '../context/FormContext';
 import ProgressBar from '../components/common/ProgressBar';
 import FormStep1 from '../components/forms/FormStep1';
 import FormStep2 from '../components/forms/FormStep2';
 import FormStep3 from '../components/forms/FormStep3';
+import image from '../assets/image.jpg';
 
 const HomePage = ({ onSetPage }) => {
     
@@ -11,17 +11,15 @@ const HomePage = ({ onSetPage }) => {
     
     const handleSubmit = () => {
         console.log('All steps complete, proceeding to video.');
-        // Save the formData from context to your backend
         onSetPage('video-will');
     };
     
     return (
-        <FormProvider>
             <div className="page bg-gray-200">
                 {/* Hero Section */}
                 <div className="relative bg-gray-900 text-white overflow-hidden">
                     <div className="absolute inset-0">
-                        <img src="https://placehold.co/1600x800/2D3748/FFFFFF?text=Family+Silhouette+Image" alt="Family silhouette against a sunset" className="w-full h-full object-cover opacity-30" />
+                        <img src={image} alt="Family silhouette against a sunset" className="w-full h-full object-cover opacity-30" />
                     </div>
                     <div className="relative container mx-auto px-6 py-32 md:py-48 text-center">
                         <span className="text-sm font-semibold uppercase tracking-widest text-indigo-300">THE SMITHS</span>
@@ -63,20 +61,25 @@ const HomePage = ({ onSetPage }) => {
                     </div>
                 </section>
 
-                {/* "Get Started Now" Form Section */}
+                {/* "Get Started Now" Form Section (NOW MULTI-STEP) */}
                 <section className="container mx-auto max-w-4xl px-6 py-16">
+                    
+                    {/* Title for form area */}
                     <div className="text-left mb-6">
                         <span className="text-indigo-600 font-semibold">Step {formStep} of 3</span>
                         <h2 className="text-4xl font-bold text-indigo-900 mt-2">Get Started Now</h2>
                     </div>
+
+                    {/* Progress Bar */}
                     <ProgressBar step={formStep} />
                     
+                    {/* Render current form step */}
                     {formStep === 1 && <FormStep1 setFormStep={setFormStep} />}
                     {formStep === 2 && <FormStep2 setFormStep={setFormStep} />}
                     {formStep === 3 && <FormStep3 onProceed={handleSubmit} setFormStep={setFormStep} />}
+
                 </section>
             </div>
-        </FormProvider>
     );
 };
 
