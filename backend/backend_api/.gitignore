@@ -8,3 +8,6 @@ media/
 staticfiles/
 __pycache__/
 
+.settings/
+.vscode/
+.idea/
