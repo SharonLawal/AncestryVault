@@ -75,7 +75,7 @@ CORS_ALLOWED_ORIGINS=[
     "http://localhost:5173",
     "http://127.0.0.1:1573",
 
-    "https://ancestry-vault.vercel.app/",
+    "https://ancestry-vault.vercel.app",
 
 ]
 CORS_ALLOWED_CREDENTIALS=True
@@ -104,8 +104,6 @@ WSGI_APPLICATION = 'backend_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-import dj_database_url
-load_dotenv()
 
 DATABASES = {
     'default': dj_database_url.parse(
