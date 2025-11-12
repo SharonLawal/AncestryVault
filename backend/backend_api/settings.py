@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 import os
 from supabase import create_client
 from django.conf import settings
+import dj_database_url
+
+
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,12 +42,16 @@ SECRET_KEY = 'django-insecure-1rh^h17gh&g#%a83x1&w4c_a^-x2r)-&^$sye304!0!7^^4-x#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "*"
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
+    "corsheaders",
     "InventoryVault",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,6 +62,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +71,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS=[
+    "http://localhost:5173",
+    "http://127.0.0.1:1573",
+
+    "https://ancestry-vault.vercel.app",
+
+]
+CORS_ALLOWED_CREDENTIALS=True
 
 ROOT_URLCONF = 'backend_api.urls'
 
@@ -88,8 +104,6 @@ WSGI_APPLICATION = 'backend_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-import dj_database_url
-load_dotenv()
 
 DATABASES = {
     'default': dj_database_url.parse(
@@ -134,6 +148,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
