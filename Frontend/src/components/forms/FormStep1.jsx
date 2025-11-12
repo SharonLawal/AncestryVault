@@ -1,21 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { FormContext } from '../../context/FormContext';
-import FormInput from '../common/FormInput';
-import { UploadIcon } from '../common/Icons';
+import FormInput from '../../components/common/FormInput';
+import { UploadIcon } from '../../components/common/Icons';
 
+// This is the new FormStep1, aligned with your Django `Person` model.
 const FormStep1 = ({ setFormStep }) => {
     const { formData, updateStep1Data } = useContext(FormContext);
     const [errors, setErrors] = useState({});
-    const [previewUrl, setPreviewUrl] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null); // State for the image preview URL
 
+    // Clean up the object URL to prevent memory leaks
     useEffect(() => {
-        if (formData.step1.profile_picture && typeof formData.step1.profile_picture === 'object') {
-            const url = URL.createObjectURL(formData.step1.profile_picture);
-            setPreviewUrl(url);
-        }
-    }, [formData.step1.profile_picture]);
-
-    useEffect(() => {
+        // This is a cleanup function that runs when the component unmounts
         return () => {
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
@@ -42,8 +38,7 @@ const FormStep1 = ({ setFormStep }) => {
             }
             
             // Create a new URL for the selected file
-            const newUrl = URL.createObjectURL(file);
-            setPreviewUrl(newUrl);
+            setPreviewUrl(URL.createObjectURL(file));
             
             updateStep1Data({ profile_picture: file });
             if (errors.profile_picture) {
@@ -59,6 +54,8 @@ const FormStep1 = ({ setFormStep }) => {
         if (!step1.fullname) newErrors.fullname = 'Full name is required.';
         if (!step1.date_of_birth) newErrors.date_of_birth = 'Date of birth is required.';
         if (!step1.gender) newErrors.gender = 'Gender is required.';
+        
+        // profile_picture is required in our UI, matching the asterisk
         if (!step1.profile_picture) newErrors.profile_picture = 'Profile picture is required.';
 
         setErrors(newErrors);
@@ -71,16 +68,10 @@ const FormStep1 = ({ setFormStep }) => {
         }
     };
 
-    const getTodayDate = () => {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-    };
-
     return (
         <form id="signup-form-step1" className="space-y-8" onSubmit={(e) => e.preventDefault()}>
+            
+            {/* Form Fields Grid - Aligned to Django Model */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {/* Column 1 */}
                 <div className="space-y-6">
@@ -101,7 +92,6 @@ const FormStep1 = ({ setFormStep }) => {
                         onChange={handleChange}
                         error={errors.date_of_birth}
                         required={true}
-                        max={getTodayDate()}
                     />
                     <FormInput 
                         label="Parent's Name"
@@ -109,6 +99,7 @@ const FormStep1 = ({ setFormStep }) => {
                         placeholder="Enter your parent's name"
                         value={formData.step1.parent_name}
                         onChange={handleChange}
+                        // This field is for linking, so not "required" in the validation
                     />
                     <FormInput 
                         label="Profession"

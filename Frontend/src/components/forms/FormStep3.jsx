@@ -4,8 +4,6 @@ import { FormContext } from '../../context/FormContext';
 const FormStep3 = ({ onProceed, setFormStep }) => {
     const { formData } = useContext(FormContext);
     const { step1, step2, video_description } = formData;
-    
-    // Filter out any empty strings from the invites list
     const invites = [step2.relative1Email, step2.relative2Email, step2.relative3Email].filter(Boolean);
 
     return (
@@ -38,7 +36,11 @@ const FormStep3 = ({ onProceed, setFormStep }) => {
                 <button type="button" onClick={() => setFormStep(2)} className="w-full bg-gray-300 text-gray-800 py-4 px-6 rounded-lg font-semibold hover:bg-gray-400 transition duration-300 text-lg">
                     Back to Step 2
                 </button>
-                <button type="button" onClick={onProceed} className="w-full bg-indigo-700 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg">
+                <button 
+                    type="button" 
+                    onClick={onProceed}
+                    className="w-full bg-indigo-700 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg"
+                >
                     Confirm & Proceed
                 </button>
             </div>

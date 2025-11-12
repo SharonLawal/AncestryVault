@@ -1,9 +1,7 @@
 import React, { useState, createContext, useCallback } from 'react';
 
-// Create a Context to hold all form data
 export const FormContext = createContext();
 
-// Define the initial state based on the model
 const initialFormData = {
     step1: {
         fullname: '',
@@ -40,7 +38,7 @@ export const FormProvider = ({ children }) => {
         }));
     }, []);
 
-    const setVideoDescription = useCallback((videoBlob) => {
+    const updateVideoDescription = useCallback((videoBlob) => {
         setFormData(prev => ({
             ...prev,
             video_description: videoBlob
@@ -48,7 +46,12 @@ export const FormProvider = ({ children }) => {
     }, []);
 
     return (
-        <FormContext.Provider value={{ formData, updateStep1Data, updateStep2Data, setVideoDescription }}>
+        <FormContext.Provider value={{ 
+            formData, 
+            updateStep1Data, 
+            updateStep2Data, 
+            updateVideoDescription
+        }}>
             {children}
         </FormContext.Provider>
     );

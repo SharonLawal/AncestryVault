@@ -1,26 +1,59 @@
-import React, { useContext } from 'react';
-import { FormContext } from '../context/FormContext';
-import { useMediaRecorder } from '../hooks/useMediaRecorder';
-import { VideoCameraIcon, StopIcon, PauseIcon } from '../components/common/Icons';
+import React, { useContext, useState } from 'react';
+import { FormContext } from '../context/FormContext.jsx';
+import { useMediaRecorder } from '../hooks/useMediaRecorder.js';
+import { VideoCameraIcon, StopIcon, PauseIcon } from '../components/common/Icons.jsx';
+import { submitPersonData } from '../services/api.js'; 
 
 const VideoWillPage = ({ onSetPage }) => {
-    const { updateVideoDescription } = useContext(FormContext);
+    const { formData, updateVideoDescription } = useContext(FormContext);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
 
     const {
         videoRef,
         isRecording,
         isPaused,
         lastRecordingUrl,
-        error,
+        error: mediaError,
         videoStatusText,
         handleStartRecording,
         handleEndRecording,
         handlePauseRecording,
     } = useMediaRecorder(updateVideoDescription);
 
-    const handleSaveAndReturn = () => {
-        onSetPage('home');
+    const handleSaveAndSubmit = async () => {
+        setIsSubmitting(true);
+        setSubmitError(null);
+        
+        if (!formData.video_description && lastRecordingUrl) {
+            console.warn("VideoWillPage: Video file not in context, fetching from last URL.");
+            const blob = await fetch(lastRecordingUrl).then(r => r.blob());
+            const videoFile = new File([blob], "legacy-video.webm", { type: "video/webm" });
+            updateVideoDescription(videoFile);
+            formData.video_description = videoFile;
+        }
+
+        if (!formData.video_description) {
+            setSubmitError("Video not recorded. Please record a video before submitting.");
+            setIsSubmitting(false);
+            return;
+        }
+        
+        try {
+            await submitPersonData(formData);
+            
+            alert("Your legacy profile has been successfully submitted!");
+            onSetPage('home');
+
+        } catch (error) {
+            console.error("Submission failed:", error);
+            setSubmitError(error.message || "An unknown error occurred during submission.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+    
+    const error = mediaError || submitError;
 
     return (
         <div className="page container mx-auto max-w-4xl px-6 py-16 bg-gray-200 flex-grow">
@@ -101,8 +134,12 @@ const VideoWillPage = ({ onSetPage }) => {
                 {/* New button to save and return */}
                 {lastRecordingUrl && !isRecording && (
                      <div className="mt-6 text-center">
-                        <button onClick={handleSaveAndReturn} className="w-full max-w-md bg-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg">
-                            Save Video & Return Home
+                        <button 
+                            onClick={handleSaveAndSubmit} 
+                            disabled={isSubmitting}
+                            className="w-full max-w-md bg-indigo-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-800 transition duration-300 text-lg disabled:opacity-50"
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Save & Submit Legacy'}
                         </button>
                     </div>
                 )}
